@@ -1,0 +1,121 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FriendFinder</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/formjs/1.1.1/formjs.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/formjs/1.1.1/formjs.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+
+        <h2>Questionnaire</h2>
+        <hr>
+        <h3><strong>About You</strong></h3>
+
+        <label class="input-label" for="name">Name (Required)</label>
+        <input type="text" id="name" class="form-control formjs" required="">
+
+        <label class="input-label" for="photo">Link to photo (required)</label>
+        <input type="text" id="photo" class="form-control formjs" required="">
+        <hr>
+
+        <div id='questionnaire'></div>
+        <br>
+        <br>
+
+        <button type="submit" class="btn btn-success btn-lg btn-block" id="submit"><i class="fa fa-check-circle" aria-hidden="true"></i> Submit
+        </button>
+        <hr>
+
+        <footer class="footer">
+            <div class="container">
+                <p><a href="/api/friends" target="_blank">API Friends List</a> | <a href="https://github.com/Mike-Wil/FriendFinder" target="_blank">GitHub Repo</a></p>
+            </div>
+        </footer>
+    </div>
+    <!-- Modal -->
+    <div id="results-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                    <h2 class="modal-title"><strong>Best Match</strong></h2>
+                </div>
+                <div class="modal-body text-center">
+                    <h2 id="compatible-name"></h2>
+                    <img id="compatible-img" src="" alt="" style="width:200px;height:auto;">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Display the questions from the array
+        var questionsArr = [
+            "You find it difficult to introduce yourself to other people.",
+            "You enjoy playing boardgames.",
+            "You try to respond to your e-mails as soon as possible and cannot stand a messy inbox.",
+            "You find it easy to stay relaxed even when there is some pressure.",
+            "You do not usually initiate conversations.",
+            "You rarely do something just out of sheer curiosity.",
+            "You enjoy beer shares.",
+            "Being organized is more important to you than being adaptable.",
+            "You are usually highly motivated and energetic.",
+            "You like the outdoors."
+        ];
+        for (let i = 0; i < questionsArr.length; i++) {
+            let questionsForm = `<h3><strong>Question ${i + 1}</strong></h3><h4>${questionsArr[i]}</h4><select class="form-control" id="q${i+1}" required><option value=''>-</option><option value='1'>1 (Strongly Disagree)</option><option value='2'>2 </option><option value='3'>3 </option><option value='4'>4 </option><option value='5'>5 (Strongly Agree)</option></select>`
+            $("#questionnaire").append(questionsForm);
+        }
+        // Capture the form inputs
+        $(document).on("click", "#submit", function(event) {
+            event.preventDefault();
+            // Form validation
+            function validate() {
+                var isValid = true;
+                $(".form-control").each(function() {
+                    if ($(this).val().trim() === "") {
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+            if (validate()) {
+                var userData = {
+                    name: $("#name").val().trim(),
+                    photo: $("#photo").val().trim(),
+                    scores: [
+                        $("#q1").val(),
+                        $("#q2").val(),
+                        $("#q3").val(),
+                        $("#q4").val(),
+                        $("#q5").val(),
+                        $("#q6").val(),
+                        $("#q7").val(),
+                        $("#q8").val(),
+                        $("#q9").val(),
+                        $("#q10").val()
+                    ]
+                };
+                $.post("/api/survey", userData, function(data) {
+                    $("#compatible-name").text(data.name);
+                    $("#compatible-img").attr("src", data.photo);
+                    $("#results-modal").modal("toggle");
+                });
+            } else {
+                console.log('Complete Survey')
+                alert('Please complete all forms.');
+            }
+        });
+    </script>
+</body>
+
+</html>
